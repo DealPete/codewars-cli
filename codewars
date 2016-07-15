@@ -1,0 +1,124 @@
+#!/usr/bin/python
+
+import getopt
+import os
+import sys
+import requests
+import json
+
+extensions =   {'javascript' : 'js',
+				'coffeescript' : 'coffee',
+				'java' : 'java',
+				'python' : 'py',
+				'ruby' : 'rb',
+				'haskell' : 'hs',
+				'csharp' : 'cs',
+				'typescript' : 'ts',
+				'clojure' : 'clj',
+				'elixir' : 'exs'
+				}
+
+def usage():
+	u = open('usage.txt', 'r')
+	print(u.read())
+	exit()
+
+opts, commands = getopt.getopt(sys.argv[1:], 'l:s:', ['language', 'strategy'])
+
+if len(commands) == 0:
+	usage()
+
+if commands[0] == 'help':
+	usage()
+
+if commands[0] == "desc":
+	if len(sys.argv) < 3:
+		usage()
+
+	r = requests.get('https://www.codewars.com/api/v1/code-challenges/' + sys.argv[2])
+	print(r.json()['description'])
+	sys.exit(0)
+
+home = os.getenv("HOME")
+
+try:
+	f = open(home + "/.config/codewars", 'r')
+	config = json.loads(f.read())
+	f.close()
+except IOError:
+	print("Writing default config file:")
+	print("Language: javascript")
+	print("Stratgy: random\n")
+	config = {'language': 'javascript', 'strategy': 'random'}
+	f = open(home + "/.config/codewars", 'w')
+	f.write(json.dumps(config))
+	f.close()
+
+for opt, arg in opts:
+	if opt in ('-l', '--language'):
+		config['language'] = arg
+	elif opt in ('-s', '--strategy'):
+		config['strategy'] = arg
+
+if commands[0] == "register":
+	if len(commands) < 2:
+		usage()
+
+	f = open(home + "/.config/codewars", 'w')
+	config['key'] = commands[1]
+	f.write(json.dumps(config))
+	f.close()
+	sys.exit(0)
+
+if not 'key' in config:
+	print("Couldn't find api key. Register your api key with:")
+	print("codewars register API-KEY")
+	sys.exit(1)
+
+if commands[0] == "train":
+
+	if len(commands) > 1:
+		r = requests.post('https://www.codewars.com/api/v1/code-challenges/'
+			+ commands[1] + '/' + config['language'] + '/train',
+			headers = {'Authorization': config['key']})
+	else:
+		r = requests.post('https://www.codewars.com/api/v1/code-challenges/'
+			+ config['language'] + '/train',
+			headers = {'Authorization': config['key']},
+			data = {'Strategy': config['strategy']})
+	
+	if r.status_code != 200:
+		print("Response status code", r.status_code)
+		if r.status_code == 500:
+			print("Internal Server Error - We had a problem with our server. Try again later.")
+		sys.exit(1)
+
+	res = r.json()
+
+	if res['success'] == False:
+		if res['reason'] == 'unauthorized':
+			print("Couldn't valiate api key.")
+			sys.exit(1)
+		
+		print("Failed to fetch data. Reason: ", res['reason'])
+		sys.exit(1)
+	
+	try:
+		file = res['slug'] + '.md'
+		f = open(file, 'w')
+		f.write(res['description'])
+		f.close()
+		print("Wrote description to", file)
+	except IOError:
+		print("Couldn't write description.")
+
+	try:
+		file = res['slug'] + extensions[config['language']]
+		f = open(file, 'w')
+		f.write(res['session']['setup'])
+		f.close()
+		print("Wrote setup to", file)
+	except IOError:
+		print("Couldn't write setup.")
+
+	sys.exit(0)

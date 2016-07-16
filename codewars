@@ -106,6 +106,13 @@ if commands[0] == "train":
 		print("Failed to fetch data. Reason: ", res['reason'])
 		sys.exit(1)
 
+	config['projectId'] = res['session']['projectId']
+	config['solutionId'] = res['session']['solutionId']
+
+	f = open(home + "/.config/codewars", 'w')
+	f.write(json.dumps(config))
+	f.close()
+
 	dirname = res['slug']
 
 	if not os.path.exists(dirname):
@@ -138,6 +145,30 @@ if commands[0] == "train":
 	except IOError:
 		print("Couldn't write setup.")
 
+	sys.exit(0)
+
+if commands[0] == "submit":
+	if len(commands) < 2:
+		usage()
+
+	if not 'projectId' in config:
+		print("Not currently training on a Kata!")
+		sys.exit(1)
+
+	try:
+		file = open(commands[1], 'r')
+		code = file.read()
+		file.close()
+	except IOError:
+		print("Couldn't open file " + commands[1])
+		sys.exit(1)
+
+	r = requests.post("https://www.codewars.com/api/v1/code-challenges/projects/"
+		+ config['projectId'] + "/solutions/" + config['solutionId'] + "/attempt",
+		headers = {'Authorization': config['key']},
+		data = {'code', code}
+	
+	print(r.text)
 	sys.exit(0)
 
 print("Unknown command " + commands[0])

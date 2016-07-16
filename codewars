@@ -23,7 +23,7 @@ def usage():
 	print(u.read())
 	exit()
 
-opts, commands = getopt.getopt(sys.argv[1:], 'l:s:', ['language', 'strategy'])
+opts, commands = getopt.getopt(sys.argv[1:], 'l:s:', ['language=', 'strategy='])
 
 if len(commands) == 0:
 	usage()
@@ -88,7 +88,7 @@ if commands[0] == "train":
 		r = requests.post('https://www.codewars.com/api/v1/code-challenges/'
 			+ config['language'] + '/train',
 			headers = {'Authorization': config['key']},
-			data = {'Strategy': config['strategy']})
+			data = {'strategy': config['strategy']})
 	
 	if r.status_code != 200:
 		print("Response status code", r.status_code)
@@ -139,3 +139,6 @@ if commands[0] == "train":
 		print("Couldn't write setup.")
 
 	sys.exit(0)
+
+print("Unknown command " + commands[0])
+sys.exit(1)

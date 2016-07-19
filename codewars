@@ -1,5 +1,7 @@
 #!/usr/bin/python
 
+import re
+import markdown
 import getopt
 import os
 import sys
@@ -35,7 +37,8 @@ if commands[0] == "desc":
 	if len(sys.argv) < 3:
 		usage()
 
-	r = requests.get('https://www.codewars.com/api/v1/code-challenges/' + sys.argv[2])
+	r = requests.get('https://www.codewars.com/api/v1/code-challenges/'
+		+ sys.argv[2])
 	print(r.json()['description'])
 	sys.exit(0)
 
@@ -81,10 +84,14 @@ if not 'key' in config:
 if commands[0] == "train":
 
 	if len(commands) > 1:
+		print("Submitted training request.  Kata:", commands[1],
+			"  Language:", config['language'])
 		r = requests.post('https://www.codewars.com/api/v1/code-challenges/'
 			+ commands[1] + '/' + config['language'] + '/train',
 			headers = {'Authorization': config['key']})
 	else:
+		print("Sumitted training request.  Strategy:", config['strategy'],
+			"  Language:", config['language'])
 		r = requests.post('https://www.codewars.com/api/v1/code-challenges/'
 			+ config['language'] + '/train',
 			headers = {'Authorization': config['key']},
@@ -106,6 +113,8 @@ if commands[0] == "train":
 		print("Failed to fetch data. Reason: ", res['reason'])
 		sys.exit(1)
 
+	print("Received data for Kata:", res['name'])
+
 	config['projectId'] = res['session']['projectId']
 	config['solutionId'] = res['session']['solutionId']
 
@@ -119,18 +128,48 @@ if commands[0] == "train":
 		os.makedirs(dirname)
 
 	try:
+		file = dirname + '/response.json'
+		f = open(file, 'w')
+		f.write(json.dumps(res) + "\n")
+		f.close()
+		print("Wrote response data to", file)
+	except IOError:
+		print("Couldn't write response data.")
+
+	try:
 		file = dirname + '/description.md'
 		f = open(file, 'w')
-		f.write(res['description'])
+		f.write('<meta charset="utf-8">')
+		f.write(res['description'] + "\n")
 		f.close()
 		print("Wrote description to", file)
 	except IOError:
 		print("Couldn't write description.")
 
+	pattern = re.compile('```.*?```', re.DOTALL)
+	text = res['description'] + '\n'
+	codes = re.findall(pattern, text)
+
+	for code in codes:
+		if re.match('```' + config['language'], code):
+			text = re.sub('```' + config['language'], '```', text)
+		else:
+			text = text.replace(code, '')
+
+	try:
+		file = dirname + '/description-' \
+			+ extensions[config['language']] + '.html'
+		f = open(file, 'w')
+		f.write(markdown.markdown(text))
+		f.close()
+		print("Wrote description formatted for", config['language'], "to", file)
+	except IOError:
+		print("Couldn't write formatted description.")
+
 	try:
 		file = dirname + '/solution.' + extensions[config['language']]
 		f = open(file, 'w')
-		f.write(res['session']['setup'])
+		f.write(res['session']['setup'] + "\n")
 		f.close()
 		print("Wrote setup to", file)
 	except IOError:
@@ -139,7 +178,7 @@ if commands[0] == "train":
 	try:
 		file = dirname + '/tests.' + extensions[config['language']]
 		f = open(file, 'w')
-		f.write(res['session']['exampleFixture'])
+		f.write(res['session']['exampleFixture'] + "\n")
 		f.close()
 		print("Wrote tests to", file)
 	except IOError:
@@ -166,7 +205,7 @@ if commands[0] == "submit":
 	r = requests.post("https://www.codewars.com/api/v1/code-challenges/projects/"
 		+ config['projectId'] + "/solutions/" + config['solutionId'] + "/attempt",
 		headers = {'Authorization': config['key']},
-		data = {'code', code}
+		data = {'code', code})
 	
 	print(r.text)
 	sys.exit(0)

@@ -149,8 +149,9 @@ if commands[0] == "train":
 	except IOError:
 		print("Couldn't write description.")
 
-	patterns = [re.compile('```' + lang + r'\b.*?```', re.DOTALL) for lang in
-		extensions.keys() if not lang == config['language']]
+	patterns = [re.compile('```\s*' + lang + r'\b.*?```', re.DOTALL) for lang in
+		[i for i in extensions.keys()] + [i for i in extensions.values()] if not
+		(lang == config['language'] or lang == extensions[config['language']])]
 
 	text = res['description'] + '\n'
 
@@ -232,6 +233,7 @@ if commands[0] == "submit":
 		if 'success' in res and res['success'] == True:
 			for paragraph in res['output']:
 				print(h2t.handle(paragraph))
+			print(res['reason'])
 			print("Time: " + str(res['wall_time']) + "ms  Passed:",
 				res['summary']['passed'], " Failed:",
 				res['summary']['failed'], " Errors:",

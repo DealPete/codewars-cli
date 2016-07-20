@@ -9,5 +9,5 @@ register API-KEY       Save your arguments and API key in ~/.config/codewars
 help                   Print this dialog.
 
 Arguments:
--l --language    Specify training language.
--s --strategy    Specify search strategy for train command.
+-l --language=LANG   	 Specify training language.
+-s --strategy=STRATEGY   Specify search strategy for train command.

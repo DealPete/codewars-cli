@@ -166,7 +166,11 @@ if commands[0] == "train":
 			+ extensions[config['language']] + '.html'
 		f = open(file, 'w')
 		f.write('<meta charset="utf-8">')
-		f.write(markdown.markdown(text))
+		
+		html = markdown.markdown(text).replace("<code>", "<pre><code>"
+			).replace("</code>", "</code></pre>")
+		
+		f.write(html)
 		f.close()
 		print("Wrote description formatted for", config['language'], "to", file)
 	except IOError:

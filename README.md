@@ -4,14 +4,30 @@ Command line interface for the website www.codewars.com
 
 Usage: codewars COMMAND [arguments]
 
-Commands:
-desc KATA              Get description of Kata.
-train [KATA]           Start training a Kata.
-submit FILE            Sumbit code in FILE to currently training Kata.
-finalize               Finalize submitted solution.
-register API-KEY       Save your arguments and API key in ~/.config/codewars
-help                   Print this dialog.
+# Commands
 
-Arguments:
--l --language=LANG       Specify training language.
--s --strategy=STRATEGY   Specify search strategy for train command.
+```desc KATA```
+Get description of Kata.
+
+```train [KATA]```
+Start training a Kata.
+
+```submit FILE```
+Sumbit code in FILE to currently training Kata.
+
+```finalize```
+Finalize submitted solution.
+
+```register API-KEY```
+Save your arguments and API key in ~/.config/codewars
+
+```help```
+Print this dialog.
+
+# Arguments
+
+```-l --language=LANG```
+Specify training language.
+
+```-s --strategy=STRATEGY```
+Specify search strategy for train command.

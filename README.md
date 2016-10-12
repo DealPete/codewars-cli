@@ -1,33 +1,35 @@
-# Codewars CLI
+## Codewars CLI
 
-Command line interface for the website www.codewars.com
+Command line interface for the website www.codewars.com. See <https://dev.codewars.com/#api-reference> for more details. To submit answers you need your API access token which is near the bottom of your [Account Settings](https://www.codewars.com/users/edit).
 
-Usage: codewars COMMAND [arguments]
+### Commands
 
-# Commands
-
-```desc KATA```
 Get description of Kata.
 
-```train [KATA]```
+`codewars desc KATA`
+
 Start training a Kata.
 
-```submit FILE```
+`codewars train [KATA]`
+
 Sumbit code in FILE to currently training Kata.
 
-```finalize```
+```codewars submit FILE```
+
 Finalize submitted solution.
 
-```register API-KEY```
+```codewars finalize```
+
 Save your arguments and API key in ~/.config/codewars
 
-```help```
-Print this dialog.
+```codewars register API-KEY```
 
-# Arguments
+### Arguments
 
-```-l --language=LANG```
 Specify training language.
 
-```-s --strategy=STRATEGY```
+```-l --language=LANG```
+
 Specify search strategy for train command.
+
+```-s --strategy=STRATEGY```
